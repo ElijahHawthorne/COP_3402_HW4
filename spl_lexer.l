@@ -128,7 +128,7 @@ IGNORED         [ \t\v\f\r]
 \;              { return semisym; }
 ,               { return commasym; }
 :=              { return becomessym; }
-==              { tok2ast(eqsym); return eqeqsym; }
+==              { tok2ast(eqeqsym); return eqeqsym; }
 =               { tok2ast(eqsym); return eqsym; }
 !=              { tok2ast(neqsym); return neqsym; }
 \<=             { tok2ast(leqsym); return leqsym; }
