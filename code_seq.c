@@ -106,21 +106,22 @@ void code_seq_add_to_end(code_seq *seq, code *c)
 
 // Requires: s1 != NULL && s2 != NULL
 // Modifies s1 to be the concatenation of s1 followed by s2
-void code_seq_concat(code_seq *s1, code_seq s2)
+code_seq code_seq_concat(code_seq s1, code_seq s2)
 {
-    if (code_seq_is_empty(s2)) {
-	
-    } else if (code_seq_is_empty(*s1)) {
-         // s1 is already their concatenation
+    if (code_seq_is_empty(s1)) {
+        s1.first = s2.first;
+        s1.last = s2.last;
+    } else if (code_seq_is_empty(s1)) {
+        // s1 is already their concatenation
     } else {
-	code *last = code_seq_last_elem(s2);
+	code *last = code_seq_last_elem(s1);
 	// assert(last != NULL);
-	last->next = s1->first;
-	s2.last = s1->last;
+	last->next = s2.first;
+	s1.last = s2.last;
     }
-    s1->first = s2.first;
-	s1->last = s2.last;
-    code_seq_okay(*s1);
+    code_seq_okay(s1);
+
+    return s1;
 }
 
 // Requires: out is open for writing.
