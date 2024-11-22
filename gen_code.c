@@ -72,6 +72,129 @@ void gen_code_program(BOFFILE bf, block_t prog)
     // Start with variable declarations
 
     // Then do statements (assign, call, if, while, read, print, block)
+    code_seq_concat(&main_cs, gen_code_stmts(prog.stmts));
 
     gen_code_output_program(bf, main_cs);
+}
+
+// Generate code for the list of statments given by stmts to out
+code_seq gen_code_stmts(stmts_t stmts) {
+    stmt_t* stmt = stmts.stmt_list.start;
+
+    code_seq ret = code_seq_empty();
+
+    while(stmt != NULL) {
+        code_seq_concat(&ret, gen_code_stmt(*stmt));
+        stmt = stmt->next;
+    }
+
+    return ret;
+}
+
+code_seq gen_code_stmt(stmt_t stmt) {
+
+    switch(stmt.stmt_kind) {
+        case assign_stmt: {
+            return gen_code_assign_stmt(stmt.data.assign_stmt);
+        }
+        case call_stmt: {
+            return gen_code_call_stmt(stmt.data.call_stmt);
+        }
+        case if_stmt: {
+            return gen_code_if_stmt(stmt.data.if_stmt);
+        }
+        case while_stmt: {
+            return gen_code_while_stmt(stmt.data.while_stmt);
+        }
+        case read_stmt: {
+            return gen_code_read_stmt(stmt.data.read_stmt);
+        }
+        case print_stmt: {
+            return gen_code_print_stmt(stmt.data.print_stmt);
+        }
+        case block_stmt: {
+            return gen_code_block_stmt(stmt.data.block_stmt);
+        }
+        default: {
+            bail_with_error("Invalid stmt_kind");
+            return code_seq_empty();
+        }
+    }
+}
+
+code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_assign_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_call_stmt(call_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_call_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_if_stmt(if_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_if_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_while_stmt(while_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_while_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_read_stmt(read_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_read_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_print_stmt(print_stmt_t stmt) {
+    code_seq ret = gen_code_expr(stmt.expr);
+
+    return ret;
+}
+
+code_seq gen_code_block_stmt(block_stmt_t stmt) {
+    bail_with_error("TODO: no implementation of gen_code_block_stmt yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_expr(expr_t expr) {
+    switch(expr.expr_kind) {
+        case expr_bin: {
+            return gen_code_binary_op_expr(expr.data.binary);
+        }
+        case expr_negated: {
+            return gen_code_logical_not_expr(expr.data.negated);
+        }
+        case expr_ident: {
+            return gen_code_ident(expr.data.ident);
+        }
+        case expr_number: {
+            return gen_code_number(expr.data.number);
+        }
+        default: {
+            bail_with_error("Invalid expr_kind");
+            return code_seq_empty();
+        }
+    }
+}
+
+code_seq gen_code_binary_op_expr(binary_op_expr_t expr) {
+    bail_with_error("TODO: no implementation of gen_code_binary_op_expr yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_logical_not_expr(negated_expr_t expr) {
+    bail_with_error("TODO: no implementation of gen_code_logical_not_expr yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_ident(ident_t id) {
+    bail_with_error("TODO: no implementation of gen_code_ident yet!");
+    return code_seq_empty();
+}
+
+code_seq gen_code_number(number_t num) {
+    unsigned int offset = literal_table_lookup(num.text, num.value);
+    return code_seq_singleton(code_pint(GP, offset));
 }

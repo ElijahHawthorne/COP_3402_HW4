@@ -13,7 +13,6 @@
 #include "code.h"
 #include "id_use.h"
 #include "literal_table.h"
-#include "gen_code.h"
 #include "utilities.h"
 #include "regname.h"
 
@@ -59,6 +58,11 @@ extern code_seq gen_code_stmts(stmts_t stmts);
 
 // Generate code for the if-statment given by stmt
 extern code_seq gen_code_if_stmt(if_stmt_t stmt);
+
+extern code_seq gen_code_while_stmt(while_stmt_t stmt);
+
+// Generate code for the call statement given by stmt
+extern code_seq gen_code_call_stmt(call_stmt_t stmt);
 
 // Generate code for the read statment given by stmt
 extern code_seq gen_code_read_stmt(read_stmt_t stmt);
@@ -112,6 +116,6 @@ extern code_seq gen_code_number(number_t num);
 // putting the result on top of the stack,
 // and using V0 and AT as temporary registers
 // May also modify SP, HI,LO when executed
-extern code_seq gen_code_logical_not_expr(expr_t exp);
+extern code_seq gen_code_logical_not_expr(negated_expr_t exp);
 
 #endif
