@@ -7,6 +7,15 @@
 #include "instruction.h"
 #include "code.h"
 #include "code_seq.h"
+#include <limits.h>
+#include <string.h>
+#include "ast.h"
+#include "code.h"
+#include "id_use.h"
+#include "literal_table.h"
+#include "gen_code.h"
+#include "utilities.h"
+#include "regname.h"
 
 // Initialize the code generator
 extern void gen_code_initialize();
@@ -43,7 +52,7 @@ extern code_seq gen_code_stmt(stmt_t stmt);
 extern code_seq gen_code_assign_stmt(assign_stmt_t stmt);
 
 // Generate code for stmt
-extern code_seq gen_code_begin_stmt(block_stmt_t stmt);
+extern code_seq gen_code_block_stmt(block_stmt_t stmt);
 
 // Generate code for the list of statments given by stmts to out
 extern code_seq gen_code_stmts(stmts_t stmts);
@@ -55,7 +64,7 @@ extern code_seq gen_code_if_stmt(if_stmt_t stmt);
 extern code_seq gen_code_read_stmt(read_stmt_t stmt);
 
 // Generate code for the write statment given by stmt.
-extern code_seq gen_code_write_stmt(print_stmt_t stmt);
+extern code_seq gen_code_print_stmt(print_stmt_t stmt);
 
 // Generate code for the expression exp
 // putting the result on top of the stack,
