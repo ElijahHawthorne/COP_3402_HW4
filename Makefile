@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.64 2024/11/13 21:32:03 leavens Exp leavens $
+# $Id: Makefile,v 1.65 2024/11/16 20:34:50 leavens Exp leavens $
 # Makefile for SPL compiler and code generation in COP 3402
 
 # Add .exe to the end of target to get that suffix in the rules
@@ -160,8 +160,8 @@ $(DISASM):
 	$(DISASM) $< > $@ 2>&1
 
 # main target for testing
-.PHONY: check-outputs
-check-outputs: $(COMPILER) $(RUNVM)
+.PHONY: check-outputs check-nonproc-outputs
+check-outputs check-nonproc-outputs: $(COMPILER) $(RUNVM)
 	@DIFFS=0; \
 	for f in `echo $(ALLTESTS) | sed -e 's/\\.$(SUF)//g'`; \
 	do \
