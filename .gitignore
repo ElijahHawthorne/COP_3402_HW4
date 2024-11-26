@@ -3,3 +3,4 @@
 *.bof
 compiler
 *.myo
+/vm
