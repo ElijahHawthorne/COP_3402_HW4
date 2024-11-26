@@ -122,14 +122,14 @@ $(RUNVM):
 .PRECIOUS: %.myo
 %.myo: %.bof $(RUNVM)
 	$(RM) $@; umask 022; \
-	cat char-inputs.txt | ./$(RUNVM) $< > $@ 2>&1
+	cat char-inputs.txt | $(RUNVM) $< > $@ 2>&1
 
 # A .myt file is the output of running the VM with the -t option
 # This can be useful for debugging.
 .PRECIOUS: %.myt
 %.myt: %.bof $(RUNVM)
 	$(RM) $@; umask 022; \
-	cat char-inputs.txt | ./$(RUNVM) -t $< > $@ 2>&1
+	cat char-inputs.txt | $(RUNVM) -t $< > $@ 2>&1
 
 .PHONY: asm disasm
 asm: $(ASM)
