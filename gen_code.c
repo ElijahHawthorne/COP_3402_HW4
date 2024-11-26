@@ -185,19 +185,19 @@ code_seq gen_code_print_stmt(print_stmt_t stmt) {
 }
 
 code_seq gen_code_block_stmt(block_stmt_t stmt) {
-    code_seq rt = code_seq_empty();
+    
 
     // Start with variable declarations
-    code_seq_concat(&rt, gen_code_var_decls(stmt.block->var_decls));
-    int vars_length = (code_seq_size(rt) / 2);
-    code_seq_concat(&rt, code_utils_save_registers_for_AR());
+    code_seq ret = gen_code_var_decls(stmt.block->var_decls);
+    int vars_length = (code_seq_size(ret) / 2);
+    code_seq_concat(&ret, code_utils_save_registers_for_AR());
 
     // Then do statements (assign, call, if, while, read, print, block)
-    code_seq_concat(&rt, gen_code_stmts(stmt.block->stmts));
-    code_seq_concat(&rt, code_utils_restore_registers_from_AR());
-    code_seq_concat(&rt, code_utils_deallocate_stack_space(vars_length));
+    code_seq_concat(&ret, gen_code_stmts(stmt.block->stmts));
+    code_seq_concat(&ret, code_utils_restore_registers_from_AR());
+    code_seq_concat(&ret, code_utils_deallocate_stack_space(vars_length));
 
-    code_seq_concat(&rt, code_utils_tear_down_program());
+    code_seq_concat(&ret, code_utils_tear_down_program());
 
     return rt;
 }
