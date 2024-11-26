@@ -4,5 +4,3 @@
 compiler
 *.myo
 vm\
-vm/asm.tab.c
-vm/asm.tab.h
