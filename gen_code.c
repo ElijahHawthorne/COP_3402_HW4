@@ -26,7 +26,7 @@ static void gen_code_output_seq(BOFFILE bf, code_seq cs)
 static BOFHeader gen_code_program_header(code_seq main_cs)
 {
     BOFHeader ret;
-    strncpy(ret.magic, "FBF", 4);  // for FLOAT SRM
+    bof_write_magic_to_header(&ret);
     ret.text_start_address = 0;
     // remember, the unit of length in the BOF format is a byte!
     ret.text_length = code_seq_size(main_cs);
@@ -103,7 +103,7 @@ code_seq gen_code_idents(ident_list_t idents) {
     code_seq ret = code_seq_empty();
 
     ident_t* ident = idents.start;
-    
+
     while(ident != NULL) {
         ident = ident->next;
     }
