@@ -15,6 +15,7 @@
 #include "literal_table.h"
 #include "utilities.h"
 #include "regname.h"
+#include "code_utils.h"
 
 // Initialize the code generator
 extern void gen_code_initialize();

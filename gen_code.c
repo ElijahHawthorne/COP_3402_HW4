@@ -29,10 +29,10 @@ static BOFHeader gen_code_program_header(code_seq main_cs)
     strncpy(ret.magic, "FBF", 4);  // for FLOAT SRM
     ret.text_start_address = 0;
     // remember, the unit of length in the BOF format is a byte!
-    ret.text_length = code_seq_size(main_cs) * BYTES_PER_WORD;
+    ret.text_length = code_seq_size(main_cs);
     int dsa = MAX(ret.text_length, 1024);
     ret.data_start_address = dsa;
-    ret.data_length = literal_table_size() * BYTES_PER_WORD;
+    ret.data_length = literal_table_size();
     int sba = dsa + ret.data_length;
     ret.stack_bottom_addr = sba;
     return ret;
@@ -71,10 +71,15 @@ void gen_code_program(BOFFILE bf, block_t prog)
 
     // Start with variable declarations
     code_seq_concat(&main_cs, gen_code_var_decls(prog.var_decls));
+    int vars_length = (code_seq_size(main_cs) / 2);
+    code_seq_concat(&main_cs, code_utils_save_registers_for_AR());
 
     // Then do statements (assign, call, if, while, read, print, block)
-    code_seq_concat(&main_cs, gen_code_stmts(prog.stmts));
-    
+    code_seq_concat(&main_cs, gen_code_stmt(*prog.stmts.stmt_list.start));
+    code_seq_concat(&main_cs, code_utils_restore_registers_from_AR());
+    code_seq_concat(&main_cs, code_utils_deallocate_stack_space(vars_length));
+
+    code_seq_concat(&main_cs, code_utils_tear_down_program());
     gen_code_output_program(bf, main_cs);
 }
 
@@ -112,6 +117,7 @@ code_seq gen_code_stmts(stmts_t stmts) {
     stmt_t* stmt = stmts.stmt_list.start;
     while(stmt != NULL) {
         // For some reason, *stmt causes a segmentation fault in hw4-gtest0.spl. This means stmt is not null but points to an invalid address. WHY
+        
         code_seq_concat(&ret, gen_code_stmt(*stmt));
         stmt = stmt->next;
     }
@@ -120,7 +126,6 @@ code_seq gen_code_stmts(stmts_t stmts) {
 }
 
 code_seq gen_code_stmt(stmt_t stmt) {
-    
     switch(stmt.stmt_kind) {
         case assign_stmt: {
             return gen_code_assign_stmt(stmt.data.assign_stmt);
@@ -180,8 +185,21 @@ code_seq gen_code_print_stmt(print_stmt_t stmt) {
 }
 
 code_seq gen_code_block_stmt(block_stmt_t stmt) {
-    bail_with_error("TODO: no implementation of gen_code_block_stmt yet!");
-    return code_seq_empty();
+    code_seq rt = code_seq_empty();
+
+    // Start with variable declarations
+    code_seq_concat(&rt, gen_code_var_decls(stmt.block->var_decls));
+    int vars_length = (code_seq_size(rt) / 2);
+    code_seq_concat(&rt, code_utils_save_registers_for_AR());
+
+    // Then do statements (assign, call, if, while, read, print, block)
+    code_seq_concat(&rt, gen_code_stmts(stmt.block->stmts));
+    code_seq_concat(&rt, code_utils_restore_registers_from_AR());
+    code_seq_concat(&rt, code_utils_deallocate_stack_space(vars_length));
+
+    code_seq_concat(&rt, code_utils_tear_down_program());
+
+    return rt;
 }
 
 code_seq gen_code_expr(expr_t expr) {
