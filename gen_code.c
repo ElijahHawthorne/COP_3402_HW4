@@ -199,7 +199,7 @@ code_seq gen_code_block_stmt(block_stmt_t stmt) {
 
     code_seq_concat(&ret, code_utils_tear_down_program());
 
-    return rt;
+    return ret;
 }
 
 code_seq gen_code_expr(expr_t expr) {
