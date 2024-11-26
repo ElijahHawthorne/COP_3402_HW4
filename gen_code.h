@@ -33,16 +33,24 @@ extern void gen_code_program(BOFFILE bf, block_t prog);
 // (one to allocate space and another to initialize that space)
 extern code_seq gen_code_var_decls(var_decls_t vds);
 
+extern code_seq gen_code_const_decls(const_decls_t cds);
+
 // Generate code for a single <var-decl>, vd,
 // There are 2 instructions generated for each identifier declared
 // (one to allocate space and another to initialize that space)
 extern code_seq gen_code_var_decl(var_decl_t vd);
+
+extern code_seq gen_code_const_decl(const_decl_t cd);
 
 // Generate code for the identififers in idents with type t
 // in reverse order (so the first declared are allocated last).
 // There are 2 instructions generated for each identifier declared
 // (one to allocate space and another to initialize that space)
 extern code_seq gen_code_idents(ident_list_t idents);
+
+extern code_seq gen_code_const_defs(const_def_list_t cds);
+
+extern code_seq gen_code_const_def(const_def_t cd);
 
 // Generate code for stmt
 extern code_seq gen_code_stmt(stmt_t stmt);

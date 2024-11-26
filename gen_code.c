@@ -71,6 +71,7 @@ void gen_code_program(BOFFILE bf, block_t prog)
     
     // Start with variable declarations
     code_seq_concat(&main_cs, gen_code_var_decls(prog.var_decls));
+
     int vars_length = (code_seq_size(main_cs) / 2);
     code_seq_concat(&main_cs, code_utils_save_registers_for_AR());
 
@@ -99,16 +100,43 @@ code_seq gen_code_var_decl(var_decl_t vd) {
     return gen_code_idents(vd.ident_list);
 }
 
-code_seq gen_code_idents(ident_list_t idents) {
+code_seq gen_code_const_decls(const_decls_t cds) {
     code_seq ret = code_seq_empty();
 
-    ident_t* ident = idents.start;
-
-    while(ident != NULL) {
-        ident = ident->next;
+    const_decl_t* const_decl = cds.start;
+    while(const_decl != NULL) {
+        code_seq_concat(&ret, gen_code_const_decl(*const_decl));
+        const_decl = const_decl->next;
     }
 
     return ret;
+}
+
+code_seq gen_code_const_decl(const_decl_t cd) {
+    return gen_code_const_defs(cd.const_def_list);
+}
+
+code_seq gen_code_const_defs(const_def_list_t cds) {
+    code_seq ret = code_seq_empty();
+
+    const_def_t* cd = cds.start;
+    while(cd != NULL) {
+        code_seq_concat(&ret, gen_code_const_def(*cd));
+        cd = cd->next;
+    }
+
+    return ret;
+}
+
+code_seq gen_code_const_def(const_def_t cd) {
+    code_seq ret = gen_code_ident(cd.ident);
+    code_seq_concat(&ret, gen_code_number(cd.number));
+    return ret;
+}
+
+code_seq gen_code_idents(ident_list_t idents) {
+    bail_with_error("TODO: no implementation of gen_code_idents yet!");
+    return code_seq_empty();
 }
 
 // Generate code for the list of statments given by stmts to out
@@ -240,7 +268,6 @@ code_seq gen_code_ident(ident_t id) {
 }
 
 code_seq gen_code_number(number_t num) {
-    
     unsigned int offset = literal_table_lookup(num.text, num.value);
     return code_seq_singleton(code_pint(GP, offset));
 }
