@@ -69,9 +69,9 @@ void gen_code_program(BOFFILE bf, block_t prog)
     code_seq main_cs = code_seq_empty();
     
     
-    // Start with variable declarations
+    // Start with constant variable declarations
+    code_seq_concat(&main_cs, gen_code_const_decls(prog.const_decls));
     code_seq_concat(&main_cs, gen_code_var_decls(prog.var_decls));
-
     int vars_length = (code_seq_size(main_cs) / 2);
     code_seq_concat(&main_cs, code_utils_save_registers_for_AR());
 
@@ -129,9 +129,8 @@ code_seq gen_code_const_defs(const_def_list_t cds) {
 }
 
 code_seq gen_code_const_def(const_def_t cd) {
-    code_seq ret = gen_code_ident(cd.ident);
-    code_seq_concat(&ret, gen_code_number(cd.number));
-    return ret;
+    bail_with_error("TODO: no implementation of gen_code_const_def yet!");
+    return code_seq_empty();
 }
 
 code_seq gen_code_idents(ident_list_t idents) {
@@ -195,8 +194,26 @@ code_seq gen_code_call_stmt(call_stmt_t stmt) {
 }
 
 code_seq gen_code_if_stmt(if_stmt_t stmt) {
-    bail_with_error("TODO: no implementation of gen_code_if_stmt yet!");
+    code_seq ret = code_seq_empty();
+
+
+
     return code_seq_empty();
+}
+
+code_seq gen_code_condition(condition_t cond) {
+    switch(cond.cond_kind) {
+        case ck_db: {
+            return gen_code_db_condition(cond.data.db_cond);
+        }
+        case ck_rel: {
+            return gen_code_rel_op_condition(cond.data.rel_op_cond);
+        }
+        default: {
+            bail_with_error("Invalid cond_kind. Code: %d", cond.cond_kind);
+            return code_seq_empty();
+        }
+    }
 }
 
 code_seq gen_code_while_stmt(while_stmt_t stmt) {
@@ -210,14 +227,23 @@ code_seq gen_code_read_stmt(read_stmt_t stmt) {
 }
 
 code_seq gen_code_print_stmt(print_stmt_t stmt) {
-    return gen_code_expr(stmt.expr);
+    expr_t expr = stmt.expr;
+    switch(expr.expr_kind) {
+        case expr_number: {
+            number_t num = expr.data.number;
+            return code_seq_singleton(code_pint(GP, literal_table_lookup(num.text, num.value)));
+        }
+        default: {
+            bail_with_error("Invalid expr_kind. Code: %d", expr.expr_kind);
+            return code_seq_empty();
+        }
+    }
 }
 
 code_seq gen_code_block_stmt(block_stmt_t stmt) {
-    
-
-    // Start with variable declarations
-    code_seq ret = gen_code_var_decls(stmt.block->var_decls);
+    // Start with constant and variable declarations
+    code_seq ret = gen_code_const_decls(stmt.block->const_decls);
+    code_seq_concat(&ret,  gen_code_var_decls(stmt.block->var_decls));
     int vars_length = (code_seq_size(ret) / 2);
     code_seq_concat(&ret, code_utils_save_registers_for_AR());
 
@@ -231,43 +257,34 @@ code_seq gen_code_block_stmt(block_stmt_t stmt) {
     return ret;
 }
 
-code_seq gen_code_expr(expr_t expr) {
-    switch(expr.expr_kind) {
-        case expr_bin: {
-            return gen_code_binary_op_expr(expr.data.binary);
+code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
+    switch(cond.rel_op.code) {
+        case eqeqsym: {
+            
         }
-        case expr_negated: {
-            return gen_code_logical_not_expr(expr.data.negated);
+        case neqsym: {
+
         }
-        case expr_ident: {
-            return gen_code_ident(expr.data.ident);
+        case ltsym: {
+
         }
-        case expr_number: {
-            return gen_code_number(expr.data.number);
+        case leqsym: {
+
+        }
+        case gtsym: {
+
+        }
+        case geqsym: {
+            
         }
         default: {
-            bail_with_error("Invalid expr_kind");
+            bail_with_error("Invalid opcode. Code: %d", cond.rel_op.code);
             return code_seq_empty();
         }
     }
 }
 
-code_seq gen_code_binary_op_expr(binary_op_expr_t expr) {
-    bail_with_error("TODO: no implementation of gen_code_binary_op_expr yet!");
+code_seq gen_code_db_condition(db_condition_t cond) {
+    bail_with_error("TODO: no implementation of gen_code_db_condition yet!");
     return code_seq_empty();
-}
-
-code_seq gen_code_logical_not_expr(negated_expr_t expr) {
-    bail_with_error("TODO: no implementation of gen_code_logical_not_expr yet!");
-    return code_seq_empty();
-}
-
-code_seq gen_code_ident(ident_t id) {
-    bail_with_error("TODO: no implementation of gen_code_ident yet!");
-    return code_seq_empty();
-}
-
-code_seq gen_code_number(number_t num) {
-    unsigned int offset = literal_table_lookup(num.text, num.value);
-    return code_seq_singleton(code_pint(GP, offset));
 }

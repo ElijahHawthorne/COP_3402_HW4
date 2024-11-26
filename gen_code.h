@@ -16,6 +16,7 @@
 #include "utilities.h"
 #include "regname.h"
 #include "code_utils.h"
+#include "spl.tab.h"
 
 // Initialize the code generator
 extern void gen_code_initialize();
@@ -78,52 +79,10 @@ extern code_seq gen_code_read_stmt(read_stmt_t stmt);
 // Generate code for the write statment given by stmt.
 extern code_seq gen_code_print_stmt(print_stmt_t stmt);
 
-// Generate code for the expression exp
-// putting the result on top of the stack,
-// and using V0 and AT as temporary registers
-// May also modify SP, HI,LO when executed
-extern code_seq gen_code_expr(expr_t exp);
+extern code_seq gen_code_condition(condition_t cond);
 
-// Generate code for the expression exp
-// putting the result on top of the stack,
-// and using V0 and AT as temporary registers
-// May also modify SP, HI,LO when executed
-extern code_seq gen_code_binary_op_expr(binary_op_expr_t exp);
+extern code_seq gen_code_rel_op_condition(rel_op_condition_t cond);
 
-// Generate code to apply op to the
-// 2nd from top and top of the stack,
-// putting the result on top of the stack in their place,
-// and using V0 and AT as temporary registers
-// May also modify SP, HI,LO when executed
-extern code_seq gen_code_op(token_t op, AST_type typ);
-
-// Generate code to apply the floating-point arith_op to the
-// 2nd from top and top of the stack,
-// putting the result on top of the stack in their place,
-// and using V0 and AT as temporary registers
-// Also modifies SP when executed
-extern code_seq gen_code_arith_op(token_t arith_op);
-
-// Generate code for the rel_op
-// applied to 2nd from top and top of the stack,
-// putting the result on top of the stack in their place,
-// and using V0 and AT as temporary registers
-// Also modifies SP when executed
-extern code_seq gen_code_rel_op(token_t rel_op, AST_type typ);
-
-// Generate code to put the value of the given identifier
-// on top of the stack
-// Modifies T9, V0, and SP when executed
-extern code_seq gen_code_ident(ident_t id);
-
-// Generate code to put the given number on top of the stack
-// Modifies V0 when executed
-extern code_seq gen_code_number(number_t num);
-
-// Generate code for the expression exp
-// putting the result on top of the stack,
-// and using V0 and AT as temporary registers
-// May also modify SP, HI,LO when executed
-extern code_seq gen_code_logical_not_expr(negated_expr_t exp);
+extern code_seq gen_code_db_condition(db_condition_t cond);
 
 #endif
