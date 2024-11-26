@@ -89,6 +89,7 @@ code_seq gen_code_var_decls(var_decls_t vds) {
     var_decl_t* var_decl = vds.var_decls;
     while(var_decl != NULL) {
         code_seq_concat(&ret, gen_code_var_decl(*var_decl));
+        var_decl = var_decl->next;
     }
 
     return ret;
