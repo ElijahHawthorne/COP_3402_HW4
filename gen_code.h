@@ -42,8 +42,7 @@ extern code_seq gen_code_var_decl(var_decl_t vd);
 // in reverse order (so the first declared are allocated last).
 // There are 2 instructions generated for each identifier declared
 // (one to allocate space and another to initialize that space)
-extern code_seq gen_code_idents(ident_list_t idents,
-				AST_type t);
+extern code_seq gen_code_idents(ident_list_t idents);
 
 // Generate code for stmt
 extern code_seq gen_code_stmt(stmt_t stmt);

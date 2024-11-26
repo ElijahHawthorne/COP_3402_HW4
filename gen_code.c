@@ -96,14 +96,14 @@ code_seq gen_code_var_decls(var_decls_t vds) {
 }
 
 code_seq gen_code_var_decl(var_decl_t vd) {
-    return gen_code_idents(vd.ident_list, vd.type_tag);
+    return gen_code_idents(vd.ident_list);
 }
 
-code_seq gen_code_idents(ident_list_t idents, AST_type t) {
+code_seq gen_code_idents(ident_list_t idents) {
     code_seq ret = code_seq_empty();
 
     ident_t* ident = idents.start;
-    printf("\nAST_type = %d", t);
+    
     while(ident != NULL) {
         ident = ident->next;
     }
