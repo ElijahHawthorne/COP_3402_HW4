@@ -33,7 +33,7 @@ static BOFHeader gen_code_program_header(code_seq main_cs)
     int dsa = MAX(ret.text_length, 1024);
     ret.data_start_address = dsa;
     ret.data_length = literal_table_size();
-    int sba = dsa + ret.data_length;
+    int sba = dsa + ret.data_length + STACK_SPACE;
     ret.stack_bottom_addr = sba;
     return ret;
 }
@@ -68,14 +68,14 @@ void gen_code_program(BOFFILE bf, block_t prog)
 {
     code_seq main_cs = code_seq_empty();
     
-
+    
     // Start with variable declarations
     code_seq_concat(&main_cs, gen_code_var_decls(prog.var_decls));
     int vars_length = (code_seq_size(main_cs) / 2);
     code_seq_concat(&main_cs, code_utils_save_registers_for_AR());
 
     // Then do statements (assign, call, if, while, read, print, block)
-    code_seq_concat(&main_cs, gen_code_stmt(*prog.stmts.stmt_list.start));
+    code_seq_concat(&main_cs, gen_code_stmts(prog.stmts));
     code_seq_concat(&main_cs, code_utils_restore_registers_from_AR());
     code_seq_concat(&main_cs, code_utils_deallocate_stack_space(vars_length));
 
@@ -114,13 +114,13 @@ code_seq gen_code_idents(ident_list_t idents) {
 // Generate code for the list of statments given by stmts to out
 code_seq gen_code_stmts(stmts_t stmts) {
     code_seq ret = code_seq_empty();
-    
-    stmt_t* stmt = stmts.stmt_list.start;
-    while(stmt != NULL) {
-        // For some reason, *stmt causes a segmentation fault in hw4-gtest0.spl. This means stmt is not null but points to an invalid address. WHY
-        
-        code_seq_concat(&ret, gen_code_stmt(*stmt));
-        stmt = stmt->next;
+
+    if(stmts.stmts_kind != empty_stmts_e) {
+        stmt_t* stmt = stmts.stmt_list.start;
+        while(stmt != NULL) {
+            code_seq_concat(&ret, gen_code_stmt(*stmt));
+            stmt = stmt->next;
+        }
     }
 
     return ret;
