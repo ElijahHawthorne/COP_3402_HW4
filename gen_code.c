@@ -280,11 +280,14 @@ code_seq gen_code_block_stmt(block_stmt_t stmt) {
 code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
     code_seq ret = code_seq_empty();
 
+    // Adding a space to the stack for expr2
+    code_seq_add_to_end(&ret, code_sri(SP, 1)); 
+
     // Evaluating expr2 and putting its value at top of stack
     code_seq_concat(&ret, gen_code_expr(cond.expr2));
 
-    // Adding a space to the stack
-    code_seq_add_to_end(&ret, code_sri(SP, 1));
+    // Adding a space to the stack for expr1
+    code_seq_add_to_end(&ret, code_sri(SP, 1)); 
 
     // Evaluating expr1 and putting its value at top of stack
     code_seq_concat(&ret, gen_code_expr(cond.expr1));
@@ -301,8 +304,16 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
             break;
         }
         case ltsym: {
-            // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            // [SP+2] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+
+            // Top of stack should now have value of expr1 - expr2
 
             // If SP < 0, then expr1 must have been less than expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_bltz(SP, 0, 2));
@@ -352,15 +363,57 @@ code_seq gen_code_expr(expr_t expr) {
             return gen_code_number(expr.data.number);
         }
         default: {
-            bail_with_error("Invalid opcode. Code: %d", expr.expr_kind);
+            bail_with_error("Invalid expr_kind. Code: %d", expr.expr_kind);
             return code_seq_empty();
         }
     }
 }
 
 code_seq gen_code_binary_op_expr(binary_op_expr_t bin) {
-    bail_with_error("No implementation for gen_code_binary_op_expr");
-    return code_seq_empty();
+    code_seq ret = code_seq_empty();
+    
+    // Adding a space to the stack for expr2
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+
+    // Evaluating expr2 and putting its value at top of stack
+    code_seq_concat(&ret, gen_code_expr(*bin.expr2));
+
+    // Adding a space to the stack for expr1
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+
+    // Evaluating expr1 and putting its value at top of stack
+    code_seq_concat(&ret, gen_code_expr(*bin.expr1));
+
+    // top of stack (SP) should be expr1, and expr2 should be next.
+
+    switch(bin.arith_op.code) {
+        case plussym: {
+            code_seq_add_to_end(&ret, code_add(SP, 2, SP, 1));
+            break;
+        }
+        case minussym: {
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+            break; 
+        }
+        case multsym: {
+            code_seq_add_to_end(&ret, code_mul(SP, 1));
+            break;
+        }
+        case divsym: {
+            code_seq_add_to_end(&ret, code_div(SP, 1));
+            break;
+        }
+        default: {
+            bail_with_error("Invalid opcode. Code: %d", bin.arith_op.code);
+            return code_seq_empty();
+        }
+    }
+    code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
+    code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
+
+    return ret;
 }
 
 // Putting the value referenced by ident at the top of the stack
