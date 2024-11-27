@@ -135,6 +135,7 @@ code_seq gen_code_const_def(const_def_t cd) {
 
     code_seq_concat(&ret, gen_code_number(cd.number));
 
+    cd.ident.idu = id_use_create(cd.ident.idu->attrs, cd.ident.idu->levelsOutward);
     int offset = id_use_get_attrs(cd.ident.idu)->offset_count;
     code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
 
@@ -151,6 +152,7 @@ code_seq gen_code_idents(ident_list_t idents) {
 
     ident_t *ident = idents.start;
     while(ident != NULL){
+        ident->idu = id_use_create(ident->idu->attrs, ident->idu->levelsOutward);
         int offset = id_use_get_attrs(ident->idu)->offset_count;
         code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
         ident = ident->next;
