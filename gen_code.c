@@ -470,8 +470,24 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
 }
 
 code_seq gen_code_db_condition(db_condition_t cond) {
-    bail_with_error("TODO: no implementation of gen_code_db_condition yet!");
-    return code_seq_empty();
+    code_seq ret = code_seq_empty();
+    //Make space for divisor
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+    
+    code_seq_concat(&ret, gen_code_expr(cond.divisor));
+    
+    //make space for dividends
+    code_seq_add_to_end(&ret, code_sri(SP,1));
+    
+    code_seq_concat(&ret, gen_code_expr(cond.dividend));
+    
+    code_seq_add_to_end(&ret, code_div(SP, 1));
+    code_seq_add_to_end(&ret, code_cfhi(SP, 0));
+    
+    //skip if remainder stored in cfhi is 0
+    code_seq_add_to_end(&ret, code_beq(SP, 0, 2));
+    
+    return ret;
 }
 
 code_seq gen_code_expr(expr_t expr) {
