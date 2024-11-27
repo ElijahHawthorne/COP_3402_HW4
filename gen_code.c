@@ -184,8 +184,38 @@ code_seq gen_code_stmt(stmt_t stmt) {
 }
 
 code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
-    bail_with_error("TODO: no implementation of gen_code_assign_stmt yet!");
-    return code_seq_empty();
+    code_seq ret = code_seq_empty();
+
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+    code_seq_concat(&ret, gen_code_expr(*stmt.expr));
+
+    // Evaluation of expr is now at top of stack (SP).
+    assert(stmt.idu != NULL);
+    assert(id_use_get_attrs(stmt.idu) != NULL);
+    id_kind kind = id_use_get_attrs(stmt.idu)->kind;
+
+    switch(kind) {
+        case constant_idk: {
+            bail_with_error("No assignment for constant");
+            return code_seq_empty();
+        }
+        case variable_idk: {
+            code_seq_concat(&ret, code_utils_compute_fp(GP, stmt.idu->levelsOutward));
+            int offset = id_use_get_attrs(stmt.idu)->offset_count;
+            assert(offset < USHRT_MAX);
+            code_seq_concat(&ret, code_swr(GP, offset, SP))
+        }
+        case procedure_idk: {
+            bail_with_error("No implementation for procedures");
+            return code_seq_empty();
+        }
+        default: {
+            bail_with_error("Invalid id_kind");
+            return code_seq_empty();
+        }
+    }
+
+    return ret;
 }
 
 code_seq gen_code_call_stmt(call_stmt_t stmt) {
