@@ -85,4 +85,12 @@ extern code_seq gen_code_rel_op_condition(rel_op_condition_t cond);
 
 extern code_seq gen_code_db_condition(db_condition_t cond);
 
+extern code_seq gen_code_expr(expr_t expr);
+
+extern code_seq gen_code_binary_op_expr(binary_op_expr_t bin);
+
+extern code_seq gen_code_ident(ident_t ident);
+
+extern code_seq gen_code_number(number_t num);
+
 #endif

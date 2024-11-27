@@ -196,9 +196,29 @@ code_seq gen_code_call_stmt(call_stmt_t stmt) {
 code_seq gen_code_if_stmt(if_stmt_t stmt) {
     code_seq ret = code_seq_empty();
 
+    // SP = 1, and SP+1 should have the evaluation of the condition stored in it. (0 for false, 1 for true)
 
+    code_seq_concat(&ret, gen_code_condition(stmt.condition));
 
-    return code_seq_empty();
+    code_seq then_body = gen_code_stmts(*(stmt.then_stmts));
+    code_seq else_body = code_seq_empty();
+    if(stmt.else_stmts->stmts_kind != empty_stmts_e) {
+        else_body = gen_code_stmts(*(stmt.else_stmts));
+
+        // Adding instruction to jump over else stmts at end of then statements.
+        code_seq_add_to_end(&then_body, code_beq(SP, 0, code_seq_size(else_body)+1));
+    } 
+
+    // Adding instruction to jump over then stmts. This instruction should be skipped if the condition evaluates to true.
+    code_seq_add_to_end(&ret, code_beq(SP, 0, code_seq_size(then_body)+1));
+
+    // Adding then stmts
+    code_seq_concat(&ret, then_body);
+
+    // Adding else stmts (adds nothing if else is empty)
+    code_seq_concat(&ret, else_body);
+
+    return ret;
 }
 
 code_seq gen_code_condition(condition_t cond) {
@@ -258,33 +278,109 @@ code_seq gen_code_block_stmt(block_stmt_t stmt) {
 }
 
 code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
+    code_seq ret = code_seq_empty();
+
+    // Evaluating expr2 and putting its value at top of stack
+    code_seq_concat(&ret, gen_code_expr(cond.expr2));
+
+    // Adding a space to the stack
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+
+    // Evaluating expr1 and putting its value at top of stack
+    code_seq_concat(&ret, gen_code_expr(cond.expr1));
+
+    // top of stack (SP) should be expr1, and expr2 should be next.
+
     switch(cond.rel_op.code) {
         case eqeqsym: {
-            
+            bail_with_error("No implementation for eqeqsym");
+            break;
         }
         case neqsym: {
-
+            bail_with_error("No implementation for neqsym");
+            break;
         }
         case ltsym: {
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
 
+            // If SP < 0, then expr1 must have been less than expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_bltz(SP, 0, 2));
+            // If SP > 0, then expr1 must have been greater than expr2, which is false. So it doesn't skip the instruction that skips the then stmts.
+
+            break;
         }
         case leqsym: {
-
+            bail_with_error("No implementation for leqsym");
+            break;
         }
         case gtsym: {
-
+            bail_with_error("No implementation for gtsym");
+            break;
         }
         case geqsym: {
-            
+            bail_with_error("No implementation for geqsym");
+            break;
         }
         default: {
             bail_with_error("Invalid opcode. Code: %d", cond.rel_op.code);
-            return code_seq_empty();
+            return ret;
         }
-    }
+    }    
+
+    return ret;
 }
 
 code_seq gen_code_db_condition(db_condition_t cond) {
     bail_with_error("TODO: no implementation of gen_code_db_condition yet!");
     return code_seq_empty();
+}
+
+code_seq gen_code_expr(expr_t expr) {
+    switch(expr.expr_kind) {
+        case expr_bin: {
+            return gen_code_binary_op_expr(expr.data.binary);
+        }
+        case expr_negated: {
+            bail_with_error("No implementation for expr_negated");
+            return code_seq_empty();
+        }
+        case expr_ident: {
+            return gen_code_ident(expr.data.ident);
+        }
+        case expr_number: {
+            return gen_code_number(expr.data.number);
+        }
+        default: {
+            bail_with_error("Invalid opcode. Code: %d", expr.expr_kind);
+            return code_seq_empty();
+        }
+    }
+}
+
+code_seq gen_code_binary_op_expr(binary_op_expr_t bin) {
+    bail_with_error("No implementation for gen_code_binary_op_expr");
+    return code_seq_empty();
+}
+
+// Putting the value referenced by ident at the top of the stack
+code_seq gen_code_ident(ident_t ident) {
+    assert(ident.idu != NULL);
+
+    code_seq ret = code_utils_compute_fp(SP, ident.idu->levelsOutward);
+
+    assert(id_use_get_attrs(ident.idu) != NULL);
+
+    int offset = id_use_get_attrs(ident.idu)->offset_count;
+
+    assert(offset < USHRT_MAX); // making sure it fits
+
+    code_seq_add_to_end(&ret, code_lwr(SP, GP, offset));
+
+    return ret;
+}
+
+// Putting the value stored in num at the top of the stack
+code_seq gen_code_number(number_t num) {
+    return code_seq_singleton(code_addi(SP, 0, num.value));
 }
