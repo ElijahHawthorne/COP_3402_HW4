@@ -302,7 +302,13 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
     switch(cond.rel_op.code) {
         case eqeqsym: {
             // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
 
             // If SP == 0, then expr1 must have been equal to expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_beq(SP, 0, 2));
@@ -310,7 +316,13 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
         }
         case neqsym: {
             // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
 
             // If SP != 0, then expr1 must have not been equal to expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_bne(SP, 0, 2));
@@ -336,7 +348,13 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
         }
         case leqsym: {
             // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
 
             // If SP <= 0, then expr1 must have been less than or equal to expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_blez(SP, 0, 2));
@@ -344,7 +362,13 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
         }
         case gtsym: {
             // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
 
             // If SP > 0, then expr1 must have been greater than expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_bgtz(SP, 0, 2));
@@ -352,7 +376,13 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
         }
         case geqsym: {
             // [SP] = expr1 - expr2
-            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 2, SP, 1));
+
+            // Removing both spaces from top of stack.
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+            code_seq_add_to_end(&ret, code_ari(SP, 1));
 
             // If SP >= 0, then expr1 must have been greater than or equal to expr2, which is true. So it skips the instruction that skips the then stmts.
             code_seq_add_to_end(&ret, code_bgez(SP, 0, 2));
