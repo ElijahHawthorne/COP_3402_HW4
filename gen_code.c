@@ -237,9 +237,23 @@ code_seq gen_code_condition(condition_t cond) {
 }
 
 code_seq gen_code_while_stmt(while_stmt_t stmt) {
+    code_seq ret = code_seq_empty();
+
+    code_seq while_body = gen_code_stmts(*stmt.body);
+
+    // Adding instruction to jump over the while body.
+    code_seq_add_to_end(&ret, code_beq(SP, 0, code_seq_size(while_body)+1));
+
+    // Adding while body instructions (initially skipped)
+    code_seq_concat(&ret, while_body);
+
+    // Adding condition instructions after while body
+    code_seq_concat(&ret, gen_code_condition(stmt.condition));
+
+    // Adding jump instruction to go back to beginning of while statement. This is skipped if condition is false.
+    code_seq_add_to_end(&ret, code_jrel(-code_seq_size(ret)));
     
-    bail_with_error("TODO: no implementation of gen_code_while_stmt yet!");
-    return code_seq_empty();
+    return ret;
 }
 
 code_seq gen_code_read_stmt(read_stmt_t stmt) {
@@ -248,6 +262,7 @@ code_seq gen_code_read_stmt(read_stmt_t stmt) {
         bail_with_error("There is no name");
         return code_seq_empty();
     }
+
     return code_seq_singleton(code_rch(GP, literal_table_lookup(name, stmt.idu->levelsOutward)));
 }
 
