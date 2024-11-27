@@ -203,7 +203,7 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
             code_seq_concat(&ret, code_utils_compute_fp(GP, stmt.idu->levelsOutward));
             int offset = id_use_get_attrs(stmt.idu)->offset_count;
             assert(offset < USHRT_MAX);
-            code_seq_concat(&ret, code_swr(GP, offset, SP))
+            code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
         }
         case procedure_idk: {
             bail_with_error("No implementation for procedures");
@@ -214,6 +214,8 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
             return code_seq_empty();
         }
     }
+
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
 
     return ret;
 }
