@@ -131,19 +131,32 @@ code_seq gen_code_const_defs(const_def_list_t cds) {
 code_seq gen_code_const_def(const_def_t cd) {
     code_seq ret = code_seq_empty();
 
-    number_t num = cd.number;
-    ret = code_seq_singleton(code_lit(GP, 0, num.value));
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+
+    code_seq_concat(&ret, gen_code_number(cd.number));
+
+    int offset = id_use_get_attrs(cd.ident.idu)->offset_count;
+    code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
+
+    code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
+
     return ret;
 }
 
 code_seq gen_code_idents(ident_list_t idents) {
     code_seq ret = code_seq_empty();
+
+    code_seq_add_to_end(&ret, code_sri(SP, 1));
+
     ident_t *ident = idents.start;
     while(ident != NULL){
-        code_seq_concat(&ret, gen_code_ident(*ident));
+        int offset = id_use_get_attrs(ident->idu)->offset_count;
+        code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
         ident = ident->next;
-
     }
+
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
     return ret;
 }
 
@@ -224,6 +237,8 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
         }
     }
 
+
+    code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
     code_seq_add_to_end(&ret, code_ari(SP, 1));
 
     return ret;
