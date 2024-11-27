@@ -237,13 +237,18 @@ code_seq gen_code_condition(condition_t cond) {
 }
 
 code_seq gen_code_while_stmt(while_stmt_t stmt) {
+    
     bail_with_error("TODO: no implementation of gen_code_while_stmt yet!");
     return code_seq_empty();
 }
 
 code_seq gen_code_read_stmt(read_stmt_t stmt) {
-    bail_with_error("TODO: no implementation of gen_code_read_stmt yet!");
-    return code_seq_empty();
+    const char *name = stmt.name;
+    if (!name){
+        bail_with_error("There is no name");
+        return code_seq_empty();
+    }
+    return code_seq_singleton(code_rch(GP, literal_table_lookup(name, stmt.idu->levelsOutward)));
 }
 
 code_seq gen_code_print_stmt(print_stmt_t stmt) {
@@ -293,11 +298,19 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
 
     switch(cond.rel_op.code) {
         case eqeqsym: {
-            bail_with_error("No implementation for eqeqsym");
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+
+            // If SP == 0, then expr1 must have been equal to expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_beq(SP, 0, 2));
             break;
         }
         case neqsym: {
-            bail_with_error("No implementation for neqsym");
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+
+            // If SP != 0, then expr1 must have not been equal to expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_bne(SP, 0, 2));
             break;
         }
         case ltsym: {
@@ -311,15 +324,27 @@ code_seq gen_code_rel_op_condition(rel_op_condition_t cond) {
             break;
         }
         case leqsym: {
-            bail_with_error("No implementation for leqsym");
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+
+            // If SP <= 0, then expr1 must have been less than or equal to expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_blez(SP, 0, 2));
             break;
         }
         case gtsym: {
-            bail_with_error("No implementation for gtsym");
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+
+            // If SP > 0, then expr1 must have been greater than expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_bgtz(SP, 0, 2));
             break;
         }
         case geqsym: {
-            bail_with_error("No implementation for geqsym");
+            // [SP] = expr1 - expr2
+            code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 1));
+
+            // If SP >= 0, then expr1 must have been greater than or equal to expr2, which is true. So it skips the instruction that skips the then stmts.
+            code_seq_add_to_end(&ret, code_bgez(SP, 0, 2));
             break;
         }
         default: {
