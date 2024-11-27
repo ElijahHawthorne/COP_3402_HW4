@@ -129,13 +129,22 @@ code_seq gen_code_const_defs(const_def_list_t cds) {
 }
 
 code_seq gen_code_const_def(const_def_t cd) {
-    bail_with_error("TODO: no implementation of gen_code_const_def yet!");
-    return code_seq_empty();
+    code_seq ret = code_seq_empty();
+
+    number_t num = cd.number;
+    ret = code_seq_singleton(code_lit(GP, 0, num.value));
+    return ret;
 }
 
 code_seq gen_code_idents(ident_list_t idents) {
-    bail_with_error("TODO: no implementation of gen_code_idents yet!");
-    return code_seq_empty();
+    code_seq ret = code_seq_empty();
+    ident_t *ident = idents.start;
+    while(ident != NULL){
+        code_seq_concat(&ret, gen_code_ident(*ident));
+        ident = ident->next;
+
+    }
+    return ret;
 }
 
 // Generate code for the list of statments given by stmts to out
