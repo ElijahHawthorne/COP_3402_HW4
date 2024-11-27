@@ -307,7 +307,8 @@ code_seq gen_code_while_stmt(while_stmt_t stmt) {
     code_seq_concat(&ret, gen_code_condition(stmt.condition));
 
     // Adding jump instruction to go back to beginning of while statement. This is skipped if condition is false.
-    code_seq_add_to_end(&ret, code_jrel(-code_seq_size(ret)));
+    code_seq_add_to_end(&ret, code_beq(SP, 0, 2));
+    code_seq_add_to_end(&ret, code_jrel(-1 * code_seq_size(ret)));
     
     return ret;
 }
