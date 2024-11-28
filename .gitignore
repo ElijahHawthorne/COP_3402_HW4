@@ -4,3 +4,4 @@
 compiler
 *.myo
 vm\
+*.myt
