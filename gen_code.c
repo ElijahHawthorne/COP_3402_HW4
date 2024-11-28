@@ -143,7 +143,7 @@ code_seq gen_code_const_def(const_def_t cd) {
    // code_seq_concat(&ret, gen_code_number(cd.number));
    
     
-    int offset =  literal_table_lookup(cd.number.text , cd.number.value);     // literal_table_find_offset(cd.number.text, cd.number.value);
+    literal_table_lookup(cd.number.text , cd.number.value);     // literal_table_find_offset(cd.number.text, cd.number.value);
   
    
    
@@ -163,7 +163,7 @@ code_seq gen_code_idents(ident_list_t idents) {
 
     ident_t *ident = idents.start;
     while(ident != NULL){
-        int offset = id_use_get_attrs(ident->idu)->offset_count;
+        int offset = literal_table_find_offset(ident->name, 0);
         code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
       
      // int offset = literal_table_find_offset(ident->name, 0);
@@ -238,7 +238,6 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
             return code_seq_empty();
         }
         case variable_idk: {
-            code_seq_concat(&ret, code_utils_compute_fp(GP, stmt.idu->levelsOutward));
             int offset = id_use_get_attrs(stmt.idu)->offset_count;
             assert(offset < USHRT_MAX);
             code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
