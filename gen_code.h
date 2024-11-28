@@ -17,6 +17,7 @@
 #include "regname.h"
 #include "code_utils.h"
 #include "spl.tab.h"
+#include "symtab.h"
 
 // Initialize the code generator
 extern void gen_code_initialize();

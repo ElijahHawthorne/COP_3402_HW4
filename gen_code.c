@@ -131,15 +131,7 @@ code_seq gen_code_const_defs(const_def_list_t cds) {
 code_seq gen_code_const_def(const_def_t cd) {
     code_seq ret = code_seq_empty();
 
-    code_seq_add_to_end(&ret, code_sri(SP, 1));
-
-    code_seq_concat(&ret, gen_code_number(cd.number));
-
-    int offset = id_use_get_attrs(cd.ident.idu)->offset_count;
-    code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
-
-    code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
-    code_seq_add_to_end(&ret, code_ari(SP, 1));
+    literal_table_lookup(cd.ident.name, cd.number.value);
 
     return ret;
 }
@@ -147,16 +139,13 @@ code_seq gen_code_const_def(const_def_t cd) {
 code_seq gen_code_idents(ident_list_t idents) {
     code_seq ret = code_seq_empty();
 
-    code_seq_add_to_end(&ret, code_sri(SP, 1));
-
     ident_t *ident = idents.start;
     while(ident != NULL){
-        int offset = id_use_get_attrs(ident->idu)->offset_count;
-        code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
+        int offset = literal_table_find_offset(ident->name, 0);
+        if(offset == -1) bail_with_error("not in literal table");
         ident = ident->next;
     }
 
-    code_seq_add_to_end(&ret, code_ari(SP, 1));
     return ret;
 }
 
@@ -566,19 +555,12 @@ code_seq gen_code_binary_op_expr(binary_op_expr_t bin) {
 
 // Putting the value referenced by ident at the top of the stack
 code_seq gen_code_ident(ident_t ident) {
-    assert(ident.idu != NULL);
 
-    code_seq ret = code_utils_compute_fp(SP, ident.idu->levelsOutward);
+    int offset = literal_table_find_offset(ident.name, 0);
 
-    assert(id_use_get_attrs(ident.idu) != NULL);
+    assert(offset < 0); 
 
-    int offset = id_use_get_attrs(ident.idu)->offset_count;
-
-    assert(offset < USHRT_MAX); // making sure it fits
-
-    code_seq_add_to_end(&ret, code_lwr(SP, GP, offset));
-
-    return ret;
+    return code_seq_singleton(code_swr(SP, GP, offset));
 }
 
 // Putting the value stored in num at the top of the stack
