@@ -242,6 +242,7 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
             int offset = id_use_get_attrs(stmt.idu)->offset_count;
             assert(offset < USHRT_MAX);
             code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
+            break;
         }
         case procedure_idk: {
             bail_with_error("No implementation for procedures");
@@ -587,9 +588,9 @@ code_seq gen_code_ident(ident_t ident) {
     code_seq ret = code_utils_compute_fp(SP, ident.idu->levelsOutward);
 
     assert(id_use_get_attrs(ident.idu) != NULL);
-printf("/n/n offset is about to be found in ident/n/n");
+
     int offset = id_use_get_attrs(ident.idu)->offset_count;
-printf("/n/n offset found in ident/n/n");
+
     assert(offset < USHRT_MAX); // making sure it fits
 
     code_seq_add_to_end(&ret, code_cpw(SP, 0,GP ,offset));
@@ -597,7 +598,7 @@ printf("/n/n offset found in ident/n/n");
     return ret;
 }
 code_seq gen_code_number(number_t num){
-int offset = literal_table_lookup(num.text, num.value);
-return code_seq_singleton(code_cpw(SP,0,GP,offset));
+    int offset = literal_table_lookup(num.text, num.value);
+    return code_seq_singleton(code_cpw(SP,0,GP,offset));
 }
 
