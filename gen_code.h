@@ -94,4 +94,6 @@ extern code_seq gen_code_ident(ident_t ident);
 
 extern code_seq gen_code_number(number_t num);
 
+extern code_seq gen_code_negated_expr(negated_expr_t expr);
+
 #endif

@@ -517,8 +517,7 @@ code_seq gen_code_expr(expr_t expr) {
             return gen_code_binary_op_expr(expr.data.binary);
         }
         case expr_negated: {
-            bail_with_error("No implementation for expr_negated");
-            return code_seq_empty();
+            return gen_code_negated_expr(expr.data.negated);
         }
         case expr_ident: {
             return gen_code_ident(expr.data.ident);
@@ -599,5 +598,11 @@ code_seq gen_code_ident(ident_t ident) {
 code_seq gen_code_number(number_t num){
     int offset = literal_table_lookup(num.text, num.value);
     return code_seq_singleton(code_cpw(SP,0,GP,offset));
+}
+
+code_seq gen_code_negated_expr(negated_expr_t expr) {
+    code_seq ret = gen_code_expr(*expr.expr);
+    code_seq_add_to_end(&ret, code_neg(SP, 0, SP, 0));
+    return ret;
 }
 
