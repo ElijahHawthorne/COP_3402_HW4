@@ -240,7 +240,7 @@ code_seq gen_code_assign_stmt(assign_stmt_t stmt) {
         case variable_idk: {
             int offset = id_use_get_attrs(stmt.idu)->offset_count;
             assert(offset < USHRT_MAX);
-            code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
+            code_seq_add_to_end(&ret, code_cpw(SP, 0, GP, offset));
             break;
         }
         case procedure_idk: {
