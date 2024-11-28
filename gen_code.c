@@ -1,5 +1,3 @@
-/* $Id: gen_code.c,v 1.25 2023/11/28 22:12:58 leavens Exp $ */
-
 #include "gen_code.h"
 
 #define STACK_SPACE 4096
@@ -67,20 +65,28 @@ static void gen_code_output_program(BOFFILE bf, code_seq main_cs)
 void gen_code_program(BOFFILE bf, block_t prog)
 {
     code_seq main_cs = code_seq_empty();
-    
+  //  printf("\n\nbegin \n\n");
     
     // Start with constant variable declarations
     code_seq_concat(&main_cs, gen_code_const_decls(prog.const_decls));
+ //   printf("\n\n const\n\n");
     code_seq_concat(&main_cs, gen_code_var_decls(prog.var_decls));
+   // printf("\n\n var \n\n");
     int vars_length = (code_seq_size(main_cs) / 2);
+    
     code_seq_concat(&main_cs, code_utils_save_registers_for_AR());
 
     // Then do statements (assign, call, if, while, read, print, block)
+   // printf("\n\n stmts \n\n");
     code_seq_concat(&main_cs, gen_code_stmts(prog.stmts));
+   // printf("\n\n  done with stmts \n\n");
     code_seq_concat(&main_cs, code_utils_restore_registers_from_AR());
+   // printf("\n\n restored regs \n\n");
     code_seq_concat(&main_cs, code_utils_deallocate_stack_space(vars_length));
+//printf("\n\n deallocated space \n\n");
 
     code_seq_concat(&main_cs, code_utils_tear_down_program());
+   // printf("\n\n teardown \n\n");
     gen_code_output_program(bf, main_cs);
 }
 
@@ -102,7 +108,7 @@ code_seq gen_code_var_decl(var_decl_t vd) {
 
 code_seq gen_code_const_decls(const_decls_t cds) {
     code_seq ret = code_seq_empty();
-
+//printf("\n\nstarting const_decls \n\n");
     const_decl_t* const_decl = cds.start;
     while(const_decl != NULL) {
         code_seq_concat(&ret, gen_code_const_decl(*const_decl));
@@ -113,12 +119,13 @@ code_seq gen_code_const_decls(const_decls_t cds) {
 }
 
 code_seq gen_code_const_decl(const_decl_t cd) {
+//printf("\n\n const_decl \n\n");
     return gen_code_const_defs(cd.const_def_list);
 }
 
 code_seq gen_code_const_defs(const_def_list_t cds) {
     code_seq ret = code_seq_empty();
-
+//printf("\n\n constdefs \n\n");
     const_def_t* cd = cds.start;
     while(cd != NULL) {
         code_seq_concat(&ret, gen_code_const_def(*cd));
@@ -130,8 +137,21 @@ code_seq gen_code_const_defs(const_def_list_t cds) {
 
 code_seq gen_code_const_def(const_def_t cd) {
     code_seq ret = code_seq_empty();
+//printf("\n\n constdef \n\n");
+ //  code_seq_add_to_end(&ret, code_sri(SP, 1));
 
-    literal_table_lookup(cd.ident.name, cd.number.value);
+   // code_seq_concat(&ret, gen_code_number(cd.number));
+   
+    
+    int offset =  literal_table_lookup(cd.number.text , cd.number.value);     // literal_table_find_offset(cd.number.text, cd.number.value);
+  
+   
+   
+  // code_seq_add_to_end(&ret, code_swr(GP, noffset, SP));
+
+  //  code_seq_add_to_end(&ret, code_sub(SP, 0, SP, 0));
+   
+   // code_seq_add_to_end(&ret, code_ari(SP, 1));
 
     return ret;
 }
@@ -139,13 +159,20 @@ code_seq gen_code_const_def(const_def_t cd) {
 code_seq gen_code_idents(ident_list_t idents) {
     code_seq ret = code_seq_empty();
 
+   // code_seq_add_to_end(&ret, code_sri(SP, 1));
+
     ident_t *ident = idents.start;
     while(ident != NULL){
-        int offset = literal_table_find_offset(ident->name, 0);
-        if(offset == -1) bail_with_error("not in literal table");
+        int offset = id_use_get_attrs(ident->idu)->offset_count;
+        code_seq_add_to_end(&ret, code_swr(GP, offset, SP));
+      
+     // int offset = literal_table_find_offset(ident->name, 0);
+      //  if(offset == -1) bail_with_error("not in literal table");
+      
         ident = ident->next;
     }
 
+    code_seq_add_to_end(&ret, code_ari(SP, 1));
     return ret;
 }
 
@@ -555,15 +582,22 @@ code_seq gen_code_binary_op_expr(binary_op_expr_t bin) {
 
 // Putting the value referenced by ident at the top of the stack
 code_seq gen_code_ident(ident_t ident) {
+    assert(ident.idu != NULL);
 
-    int offset = literal_table_find_offset(ident.name, 0);
+    code_seq ret = code_utils_compute_fp(SP, ident.idu->levelsOutward);
 
-    assert(offset < 0); 
+    assert(id_use_get_attrs(ident.idu) != NULL);
+printf("/n/n offset is about to be found in ident/n/n");
+    int offset = id_use_get_attrs(ident.idu)->offset_count;
+printf("/n/n offset found in ident/n/n");
+    assert(offset < USHRT_MAX); // making sure it fits
 
-    return code_seq_singleton(code_swr(SP, GP, offset));
+    code_seq_add_to_end(&ret, code_cpw(SP, 0,GP ,offset));
+
+    return ret;
+}
+code_seq gen_code_number(number_t num){
+int offset = literal_table_lookup(num.text, num.value);
+return code_seq_singleton(code_cpw(SP,0,GP,offset));
 }
 
-// Putting the value stored in num at the top of the stack
-code_seq gen_code_number(number_t num) {
-    return code_seq_singleton(code_addi(SP, 0, num.value));
-}
