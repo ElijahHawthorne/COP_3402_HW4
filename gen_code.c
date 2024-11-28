@@ -172,7 +172,7 @@ code_seq gen_code_idents(ident_list_t idents) {
         ident = ident->next;
     }
 
-    code_seq_add_to_end(&ret, code_ari(SP, 1));
+    // code_seq_add_to_end(&ret, code_ari(SP, 1));
     return ret;
 }
 
